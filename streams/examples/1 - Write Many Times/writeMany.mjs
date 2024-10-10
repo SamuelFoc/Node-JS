@@ -35,14 +35,40 @@ const filePath = "./output.txt";
 // Execution Time: 1.5s
 // CPU Usage: 25% (one core)
 // Memory Usage: 250MB
-(async () => {
-  console.time("writeMany");
-  const fileHandle = await fs.promises.open(filePath, "w");
+// (async () => {
+//   console.time("writeManySTREAM");
+//   const fileHandle = await fs.promises.open(filePath, "w");
 
-  const stream = fileHandle.createWriteStream();
+//   const stream = fileHandle.createWriteStream();
+//   for (let i = 0; i < 1000000; i++) {
+//     const buff = Buffer.from(`ISO-T: ${new Date()}\n`);
+//     stream.write(buff);
+//   }
+//   console.timeEnd("writeManySTREAM");
+// })();
+
+// * How To Simulate Stream
+// ! This aproach is not handling backpressure (can cause memory overload) !
+// Execution Time: 1.45s
+// CPU Usage: 40% (one core)
+// Memory Usage: 50MB
+(async () => {
+  console.time("writeManySOS");
+  const fileHandle = await fs.promises.open(filePath, "w");
+  let queue = [];
   for (let i = 0; i < 1000000; i++) {
-    const buff = Buffer.from(`ISO-T: ${new Date()}\n`);
-    stream.write(buff);
+    const buff = Buffer.from(`ISO-T: ${new Date().toISOString()}\n`);
+    queue.push(buff);
+    if (i % 8000 === 0 && queue.length > 0) {
+      await fileHandle.write(Buffer.concat(queue));
+      queue = [];
+    }
   }
-  console.timeEnd("writeMany");
+  // Write remainings
+  if (queue.length > 0) {
+    await fileHandle.write(Buffer.concat(queue));
+  }
+  // Close the file connection
+  await fileHandle.close();
+  console.timeEnd("writeManySOS");
 })();
