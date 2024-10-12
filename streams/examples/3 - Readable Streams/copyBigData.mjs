@@ -32,7 +32,7 @@ const copyFile = async (src, dest) => {
   readStream.on("end", async () => {
     await fileReader.close();
     await fileWriter.close();
-    console.log("\nFile has been copyed!");
+    console.log("\nFile has been copied!");
   });
 };
 
