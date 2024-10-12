@@ -19,7 +19,7 @@ const HIGH_WATER_MARK = 128 * 1024; // Increase buffer size
   const generateChunk = (startIndex, count) => {
     let chunk = "";
     for (let j = 0; j < count && startIndex + j < N_ROWS; j++) {
-      chunk += `Data row: ${startIndex + j},\n`;
+      chunk += `${startIndex + j},\n`;
     }
     return Buffer.from(chunk);
   };
